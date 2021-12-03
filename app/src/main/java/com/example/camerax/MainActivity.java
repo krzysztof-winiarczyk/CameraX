@@ -5,14 +5,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
 //Sprawy systemowe z JetPack-a
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.annotation.NonNull;
 
 //Pozostałe sprawy systemowe
-import android.os.Bundle;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -33,6 +31,10 @@ import androidx.camera.view.PreviewView;
 import java.io.File;
 
 //Obsługa wątków z Javy
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +46,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 public class MainActivity extends AppCompatActivity {
 
     //Nazwa pliku dla fotki
-    private final String PHOTO_FILE_NAME = "mojaFotka.jpg";
+    private String photoFileName;
 
     //Obsługa uprawień
     private final int REQUEST_CODE_PERMISSIONS = 10;
@@ -83,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
         cameraExecutor = Executors.newSingleThreadExecutor();
         outputDirectory = getOutputDirectory();
+        setPhotoFileName();
     }
 
     @Override
@@ -108,11 +111,21 @@ public class MainActivity extends AppCompatActivity {
         int permissionRequired = ContextCompat.checkSelfPermission(getBaseContext(),REQUIRED_PERMISSIONS);
         return permissionRequired == permissionGranted;
     }
+
     private File getOutputDirectory() {
         //Odczytenie ścieżki do katalogu zdjęć
         File[] files = getExternalMediaDirs();
         return files[1];
     }
+
+    private void setPhotoFileName(){
+        //nadanie wartości photoFileName
+        Date date = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss-SSS");
+        String strDate = dateFormat.format(date);
+        photoFileName = "img_" + strDate + ".jpg";
+    }
+
     private void startCamera() {
         //Uruchomienie kamery
         ListenableFuture cameraProviderFuture = ProcessCameraProvider.getInstance(this);
@@ -142,7 +155,9 @@ public class MainActivity extends AppCompatActivity {
         //
         if(imageCapture==null) return;
 
-        File photoFile = new File(outputDirectory,PHOTO_FILE_NAME);
+        setPhotoFileName();
+
+        File photoFile = new File(outputDirectory, photoFileName);
 
         ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
 
